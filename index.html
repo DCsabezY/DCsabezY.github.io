@@ -1,35 +1,769 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Az első GitHub Pages oldalam</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>Valós idejű kártyajáték – UI demó</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        /* Alap beállítások */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #262b40 0, #111321 45%, #05060b 100%);
+            color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            min-height: 100vh;
+        }
+
+        /* Mobilos keret – max 480px széles „telefon” */
+        .app {
+            background: #151827;
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #24273b;
+            border-right: 1px solid #24273b;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* HUD (felső sáv) */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(to right, #181b2b, #1f2340);
+            border-bottom: 1px solid #282b45;
+            flex-shrink: 0;
+        }
+
+        .hud-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffcc33, #ff6633);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #141414;
+            font-size: 0.9rem;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .player-level {
+            font-size: 0.75rem;
+            color: #b0b4d8;
+        }
+
+        .hud-right {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .resource {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        .resource-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+            .resource-icon.gold {
+                background: radial-gradient(circle, #ffe26b, #ffb300);
+            }
+
+            .resource-icon.gem {
+                background: radial-gradient(circle, #7cf7ff, #1ed6ff);
+            }
+
+        /* Tartalom */
+        .content {
+            flex: 1;
+            padding: 0.75rem 1rem 0.75rem;
+            overflow-y: auto;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+            .screen.active {
+                display: block;
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .screen-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .screen-subtitle {
+            font-size: 0.85rem;
+            color: #b0b4d8;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Főoldal (Harc) */
+        .hero-card {
+            background: radial-gradient(circle at top left, #2d375f, #171a2a);
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid #313a64;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.7rem;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-bottom: 0.75rem;
+            color: #c8cdf5;
+        }
+
+        .battle-button {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.75rem 2.5rem;
+            background: linear-gradient(135deg, #ffcc33, #ff7a18);
+            border-radius: 999px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            color: #141414;
+            text-transform: uppercase;
+            box-shadow: 0 12px 24px rgba(255, 170, 40, 0.5);
+            transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+        }
+
+            .battle-button:active {
+                transform: translateY(1px) scale(0.99);
+                box-shadow: 0 6px 16px rgba(255, 170, 40, 0.35);
+            }
+
+        .match-status {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: #9ca3d4;
+        }
+
+        /* Kártyák – rács + pakli */
+        .cards-layout {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 400px) {
+            .cards-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .card-item {
+            background: linear-gradient(145deg, #262b45, #1a1e35);
+            border-radius: 0.7rem;
+            padding: 0.5rem;
+            border: 1px solid #343b62;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            position: relative;
+            min-height: 80px;
+        }
+
+        .card-rarity {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.4rem;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: rgba(0, 0, 0, 0.35);
+            color: #ffd56b;
+        }
+
+        .card-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-cost {
+            font-size: 0.7rem;
+            color: #c8cdf5;
+        }
+
+        .card-tag {
+            font-size: 0.65rem;
+            color: #9ca3d4;
+        }
+
+        .deck-panel {
+            background: linear-gradient(145deg, #191c30, #151728);
+            border-radius: 0.75rem;
+            border: 1px solid #313861;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .deck-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.25rem;
+        }
+
+        .deck-slot {
+            height: 42px;
+            border-radius: 0.5rem;
+            border: 1px dashed #3b4269;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #7f87c4;
+            background: rgba(12, 15, 30, 0.9);
+        }
+
+            .deck-slot.filled {
+                border-style: solid;
+                border-color: #ffcc33;
+                background: linear-gradient(145deg, #3b3050, #262342);
+                color: #fef3c7;
+                font-weight: 600;
+            }
+
+        .deck-meta {
+            font-size: 0.7rem;
+            color: #b0b4d8;
+        }
+
+        /* Bolt */
+        .shop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, #262b45, #171a2a);
+            border: 1px solid #353e65;
+        }
+
+        .shop-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .shop-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .shop-desc {
+            font-size: 0.75rem;
+            color: #b0b4d8;
+        }
+
+        .shop-badge {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #fddf91;
+        }
+
+        .shop-price {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        .shop-button {
+            border: none;
+            border-radius: 999px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: radial-gradient(circle at top left, #7cf7ff, #1ed6ff);
+            color: #091019;
+            box-shadow: 0 6px 16px rgba(30, 214, 255, 0.4);
+        }
+
+        /* Klán */
+        .clan-card {
+            background: linear-gradient(145deg, #262b45, #181b30);
+            border-radius: 0.9rem;
+            padding: 0.75rem;
+            border: 1px solid #343d63;
+            margin-bottom: 0.5rem;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.4rem;
+        }
+
+        .pill {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.24);
+            color: #c8cdf5;
+        }
+
+        /* Események / napi küldetések */
+        .quest-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .quest-item {
+            padding: 0.55rem 0.65rem;
+            border-radius: 0.7rem;
+            background: linear-gradient(135deg, #21243a, #171a2a);
+            border: 1px solid #343d63;
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.2rem;
+        }
+
+        .quest-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .quest-reward {
+            font-size: 0.75rem;
+            color: #fcd34d;
+        }
+
+        .quest-progress {
+            font-size: 0.7rem;
+            color: #b0b4d8;
+            margin-top: 0.15rem;
+        }
+
+        /* Alsó navigáció */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            border-top: 1px solid #262b45;
+            background: radial-gradient(circle at top, #1a1d32, #101222);
+            padding: 0.2rem 0.2rem 0.3rem;
+            gap: 0.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            flex: 1;
+            border-radius: 0.7rem;
+            border: none;
+            background: transparent;
+            color: #9ca3d4;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.2rem 0.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+            cursor: pointer;
+            transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.06s ease-out;
+        }
+
+            .nav-item span.icon {
+                font-size: 1.1rem;
+                line-height: 1;
+            }
+
+            .nav-item.active {
+                background: linear-gradient(135deg, #3b82f6, #6366f1);
+                color: #f9fafb;
+                transform: translateY(-1px);
+            }
+
+            .nav-item:active {
+                transform: translateY(1px) scale(0.98);
+            }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Helló, GitHub Pages! 👋</h1>
-    <p>Ezt az oldalt a GitHub Pages szolgáltatás hosztolja.</p>
-  </header>
+    <div class="app">
+        <!-- HUD -->
+        <header class="hud">
+            <div class="hud-left">
+                <div class="avatar">12</div>
+                <div class="player-info">
+                    <div class="player-name">Player123</div>
+                    <div class="player-level">Szint 12 • Klán: A mi gépünkön működik</div>
+                </div>
+            </div>
+            <div class="hud-right">
+                <div class="resource">
+                    <div class="resource-icon gold"></div>
+                    <span>12 450</span>
+                </div>
+                <div class="resource">
+                    <div class="resource-icon gem"></div>
+                    <span>380</span>
+                </div>
+            </div>
+        </header>
 
-  <main>
-    <section>
-      <h2>Mi ez?</h2>
-      <p>Egy nagyon egyszerű statikus weboldal. Szerkeszd az <code>index.html</code> fájlt,
-      és tölts fel újra a GitHubra, hogy frissüljön a web.</p>
-    </section>
+        <!-- Tartalom -->
+        <main class="content">
+            <!-- Főoldal / Harc -->
+            <section id="screen-home" class="screen active">
+                <div class="screen-title">Főoldal</div>
+                <div class="screen-subtitle">
+                    Indíts egy gyors mérkőzést egy hasonló erősségű ellenfél ellen.
+                </div>
 
-    <section>
-      <h2>Hasznos linkek</h2>
-      <ul>
-        <li><a href="https://developer.mozilla.org/hu/docs/Web/HTML">HTML alapok (MDN)</a></li>
-        <li><a href="https://developer.mozilla.org/hu/docs/Web/CSS">CSS alapok (MDN)</a></li>
-      </ul>
-    </section>
-  </main>
+                <div class="hero-card">
+                    <div class="hero-title">Ranglistás Harc</div>
+                    <div class="hero-badge">Valós idejű PvP • 3 perc</div>
+                    <p style="font-size: 0.8rem; color:#d0d4ff;">
+                        Védelmezd a bázisodat és rombold le az ellenfél fő tornyát!
+                    </p>
+                    <button class="battle-button" id="battleButton">HARC!</button>
+                    <div class="match-status" id="matchStatus">
+                        Készen állsz. Koppints a <strong>HARC!</strong> gombra.
+                    </div>
+                </div>
+            </section>
 
-  <footer>
-    <p>Készült: GitHub Pages starter sablon</p>
-  </footer>
+            <!-- Kártyák -->
+            <section id="screen-cards" class="screen">
+                <div class="screen-title">Kártyák</div>
+                <div class="screen-subtitle">
+                    Szerkeszd az aktív paklidat és nézd meg a gyűjteményed.
+                </div>
+
+                <div class="cards-layout">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+                            <span style="font-size:0.8rem;font-weight:600;">Kártyagyűjtemény</span>
+                            <span style="font-size:0.7rem;color:#9ca3d4;">Új: 2</span>
+                        </div>
+                        <div class="card-grid">
+                            <div class="card-item">
+                                <div class="card-rarity">Rare</div>
+                                <div class="card-name">Lángőr</div>
+                                <div class="card-cost">Költség: 4 elixír</div>
+                                <div class="card-tag">Közepes életerő, területsebzés</div>
+                            </div>
+                            <div class="card-item">
+                                <div class="card-rarity" style="color:#a5b4fc;">Epic</div>
+                                <div class="card-name">Jégvarázs</div>
+                                <div class="card-cost">Költség: 3 elixír</div>
+                                <div class="card-tag">Lelassítja az egységeket</div>
+                            </div>
+                            <div class="card-item">
+                                <div class="card-rarity">Common</div>
+                                <div class="card-name">Íjász duó</div>
+                                <div class="card-cost">Költség: 3 elixír</div>
+                                <div class="card-tag">Légi és földi célok ellen</div>
+                            </div>
+                            <div class="card-item">
+                                <div class="card-rarity" style="color:#f9a8d4;">Legendary</div>
+                                <div class="card-name">Viharherceg</div>
+                                <div class="card-cost">Költség: 5 elixír</div>
+                                <div class="card-tag">Gyors egység, láncsebzés</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="deck-panel">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:0.8rem;font-weight:600;">Aktív pakli</span>
+                            <span style="font-size:0.7rem;color:#9ca3d4;">8 / 8 kártya</span>
+                        </div>
+                        <div class="deck-slots">
+                            <div class="deck-slot filled">Lángőr</div>
+                            <div class="deck-slot filled">Íjász duó</div>
+                            <div class="deck-slot filled">Jégvarázs</div>
+                            <div class="deck-slot filled">Viharherceg</div>
+                            <div class="deck-slot filled">Pajzskapitány</div>
+                            <div class="deck-slot filled">Géptorony</div>
+                            <div class="deck-slot filled">Villámcsapás</div>
+                            <div class="deck-slot filled">Falusi Bárdok</div>
+                        </div>
+                        <div class="deck-meta">
+                            Átlagos elixír: <strong>3.6</strong><br />
+                            Épület: 1 • Varázslat: 2 • Egység: 5
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- Klán -->
+            <section id="screen-clan" class="screen">
+                <div class="screen-title">Klán</div>
+                <div class="screen-subtitle">
+                    Csatlakozz klánhoz, cserélj kártyákat és vegyél részt klánháborúkban.
+                </div>
+
+                <div class="clan-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:600;">Klán Akadémia</div>
+                            <div style="font-size:0.75rem;color:#b0b4d8;">Tagok: 32 / 50 • Magyar</div>
+                        </div>
+                        <button class="shop-button" style="padding:0.25rem 0.9rem;font-size:0.7rem;">
+                            Csatlakozás
+                        </button>
+                    </div>
+                    <div class="pill-row">
+                        <span class="pill">Kártyacsere</span>
+                        <span class="pill">Klán chat</span>
+                        <span class="pill">Klánháború</span>
+                        <span class="pill">Akadémia</span>
+                    </div>
+                </div>
+
+                <div class="clan-card">
+                    <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.2rem;">
+                        Klán üzenőfal
+                    </div>
+                    <p style="font-size:0.75rem;color:#c8cdf5;">
+                        „Holnap 19:00-tól klánháború! Frissítsd a paklidat és hozz védekező paklit is.”
+                    </p>
+                </div>
+            </section>
+
+            <!-- Bolt -->
+            <section id="screen-shop" class="screen">
+                <div class="screen-title">Bolt</div>
+                <div class="screen-subtitle">
+                    Napi ajánlatok, ládák és erőforrások – a haladás gyorsítására.
+                </div>
+
+                <div class="shop-list">
+                    <div class="shop-item">
+                        <div class="shop-info">
+                            <div class="shop-name">Napi láda</div>
+                            <div class="shop-desc">Garantált rare kártya + arany.</div>
+                            <div class="shop-badge">Korlátozott ideig</div>
+                        </div>
+                        <div class="shop-price">
+                            <div class="resource-icon gold"></div>
+                            <span>750</span>
+                            <button class="shop-button">Vétel</button>
+                        </div>
+                    </div>
+
+                    <div class="shop-item">
+                        <div class="shop-info">
+                            <div class="shop-name">Óriás láda</div>
+                            <div class="shop-desc">Sok kártya, nagy eséllyel Epic/Legendary.</div>
+                            <div class="shop-badge">Prémium</div>
+                        </div>
+                        <div class="shop-price">
+                            <div class="resource-icon gem"></div>
+                            <span>490</span>
+                            <button class="shop-button">Vétel</button>
+                        </div>
+                    </div>
+
+                    <div class="shop-item">
+                        <div class="shop-info">
+                            <div class="shop-name">Arany csomag</div>
+                            <div class="shop-desc">+25 000 arany fejlesztéshez.</div>
+                        </div>
+                        <div class="shop-price">
+                            <div class="resource-icon gem"></div>
+                            <span>250</span>
+                            <button class="shop-button">Vétel</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Események / napi küldetések -->
+            <section id="screen-events" class="screen">
+                <div class="screen-title">Események & Küldetések</div>
+                <div class="screen-subtitle">
+                    Teljesíts napi kihívásokat a jutalmakért, és vegyél részt időszakos eseményeken.
+                </div>
+
+                <div style="margin-bottom:0.4rem;font-size:0.78rem;color:#c8cdf5;">
+                    Napi küldetések
+                </div>
+                <div class="quest-list">
+                    <div class="quest-item">
+                        <div class="quest-header">
+                            <div class="quest-name">Játssz le 3 mérkőzést</div>
+                            <div class="quest-reward">Jutalom: 200 arany</div>
+                        </div>
+                        <div class="quest-progress">Előrehaladás: 1 / 3</div>
+                    </div>
+                    <div class="quest-item">
+                        <div class="quest-header">
+                            <div class="quest-name">Győzz 2 mérkőzésben</div>
+                            <div class="quest-reward">Jutalom: 100 XP</div>
+                        </div>
+                        <div class="quest-progress">Előrehaladás: 0 / 2</div>
+                    </div>
+                    <div class="quest-item">
+                        <div class="quest-header">
+                            <div class="quest-name">Fejlessz fel egy kártyát</div>
+                            <div class="quest-reward">Jutalom: 30 gyémánt</div>
+                        </div>
+                        <div class="quest-progress">Előrehaladás: 0 / 1</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Alsó navigáció -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-target="home">
+                <span class="icon">🏠</span>
+                <span>Főoldal</span>
+            </button>
+            <button class="nav-item" data-target="cards">
+                <span class="icon">🃏</span>
+                <span>Kártyák</span>
+            </button>
+            <button class="nav-item" data-target="clan">
+                <span class="icon">🛡️</span>
+                <span>Klán</span>
+            </button>
+            <button class="nav-item" data-target="shop">
+                <span class="icon">🛒</span>
+                <span>Bolt</span>
+            </button>
+            <button class="nav-item" data-target="events">
+                <span class="icon">⭐</span>
+                <span>Események</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+  // Navigáció – képernyők váltása
+  const navButtons = document.querySelectorAll(".nav-item");
+  const screens = document.querySelectorAll(".screen");
+
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.target;
+      screens.forEach(scr => {
+        scr.classList.toggle("active", scr.id === "screen-" + target);
+      });
+      navButtons.forEach(b => b.classList.toggle("active", b === btn));
+    });
+  });
+
+  // Matchmaking állapot szimuláció a HARC! gombbal
+  const battleButton = document.getElementById("battleButton");
+  const matchStatus = document.getElementById("matchStatus");
+  let searching = false;
+  let searchTimeout = null;
+
+  battleButton.addEventListener("click", () => {
+    if (searching) return; // már keres
+
+    searching = true;
+    matchStatus.innerHTML = "Ellenfél keresése...";
+    battleButton.textContent = "KERESÉS…";
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(() => {
+      searching = false;
+      battleButton.textContent = "HARC!";
+      matchStatus.innerHTML =
+        "Ellenfél megtalálva! <strong>Kapcsolódás a szerverhez...</strong>";
+    }, 1800);
+  });
+    </script>
 </body>
 </html>
