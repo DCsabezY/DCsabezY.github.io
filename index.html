@@ -2,164 +2,179 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8" />
-    <title>Valós idejű kártyajáték – UI demó</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="style.css" rel="stylesheet" />
-    <script src="sricpt.js"></script>
+    <title>Kártyajáték UI prototípus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js"></script>
 </head>
 <body>
-    <div class="app">
-        <!-- HUD -->
+    <div class="app-shell">
+        <!-- Felső HUD -->
         <header class="hud">
             <div class="hud-left">
-                <div class="avatar">12</div>
+                <div class="player-avatar"></div>
                 <div class="player-info">
                     <div class="player-name">Player123</div>
-                    <div class="player-level">Szint 12 • Klán: A mi gépünkön működik</div>
+                    <div class="player-level">
+                        Szint 12 • Klán: <span id="hudClanLabel">Nincs klán</span>
+                    </div>
                 </div>
             </div>
             <div class="hud-right">
                 <div class="resource">
                     <div class="resource-icon gold"></div>
-                    <span>12 450</span>
+                    <span id="goldAmount">12450</span>
                 </div>
                 <div class="resource">
                     <div class="resource-icon gem"></div>
-                    <span>380</span>
+                    <span id="gemAmount">380</span>
                 </div>
             </div>
         </header>
 
         <!-- Tartalom -->
-        <main class="content">
-            <!-- Főoldal / Harc -->
-            <section id="screen-home" class="screen active">
-                <div class="screen-title">Főoldal</div>
-                <div class="screen-subtitle">
-                    Indíts egy gyors mérkőzést egy hasonló erősségű ellenfél ellen.
-                </div>
-
+        <main class="main-content">
+            <!-- Főoldal (Harc) -->
+            <section class="view active" data-view-id="home">
                 <div class="hero-card">
-                    <div class="hero-title">Ranglistás Harc</div>
-                    <div class="hero-badge">Valós idejű PvP • 3 perc</div>
-                    <p style="font-size: 0.8rem; color:#d0d4ff;">
-                        Védelmezd a bázisodat és rombold le az ellenfél fő tornyát!
+                    <div class="hero-label">Ranglistás csata</div>
+                    <h1 class="hero-title">Készen állsz a harcra?</h1>
+                    <p class="hero-subtitle">
+                        Állítsd össze a paklidat, és mérkőzz meg más játékosokkal valós időben.
                     </p>
-                    <button class="battle-button" id="battleButton">HARC!</button>
-                    <div class="match-status" id="matchStatus">
-                        Készen állsz. Koppints a <strong>HARC!</strong> gombra.
-                    </div>
+                    <button id="battleBtn" class="battle-button">HARC!</button>
+                    <p class="hero-status" id="matchStatusText">
+                        Nyomd meg a HARC gombot a demó oldal megnyitásához.
+                    </p>
                 </div>
             </section>
 
-            <!-- Kártyák -->
-            <section id="screen-cards" class="screen">
-                <div class="screen-title">Kártyák</div>
-                <div class="screen-subtitle">
-                    Szerkeszd az aktív paklidat és nézd meg a gyűjteményed.
-                </div>
-
+            <!-- Kártyák / Pakli -->
+            <section class="view" data-view-id="cards">
                 <div class="cards-layout">
-                    <div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
-                            <span style="font-size:0.8rem;font-weight:600;">Kártyagyűjtemény</span>
-                            <span style="font-size:0.7rem;color:#9ca3d4;">Új: 2</span>
-                        </div>
+                    <div class="cards-panel">
+                        <h2 class="panel-title">Kártyagyűjtemény</h2>
+                        <p class="panel-subtitle">
+                            Kattints egy kártyára a kijelöléshez, majd add a paklidhoz.
+                        </p>
+
                         <div class="card-grid">
-                            <div class="card-item">
-                                <div class="card-rarity">Rare</div>
+                            <div class="card-item selectable-card"
+                                 data-card-name="Lángőr"
+                                 data-card-elixir="4">
+                                <div class="card-header">
+                                    <span class="card-rarity rarity-rare">Rare</span>
+                                    <span class="card-cost">4 elixír</span>
+                                </div>
                                 <div class="card-name">Lángőr</div>
-                                <div class="card-cost">Költség: 4 elixír</div>
                                 <div class="card-tag">Közepes életerő, területsebzés</div>
                             </div>
-                            <div class="card-item">
-                                <div class="card-rarity" style="color:#a5b4fc;">Epic</div>
+
+                            <div class="card-item selectable-card"
+                                 data-card-name="Jégvarázs"
+                                 data-card-elixir="3">
+                                <div class="card-header">
+                                    <span class="card-rarity rarity-epic">Epic</span>
+                                    <span class="card-cost">3 elixír</span>
+                                </div>
                                 <div class="card-name">Jégvarázs</div>
-                                <div class="card-cost">Költség: 3 elixír</div>
                                 <div class="card-tag">Lelassítja az egységeket</div>
                             </div>
-                            <div class="card-item">
-                                <div class="card-rarity">Common</div>
+
+                            <div class="card-item selectable-card"
+                                 data-card-name="Íjász duó"
+                                 data-card-elixir="3">
+                                <div class="card-header">
+                                    <span class="card-rarity rarity-common">Common</span>
+                                    <span class="card-cost">3 elixír</span>
+                                </div>
                                 <div class="card-name">Íjász duó</div>
-                                <div class="card-cost">Költség: 3 elixír</div>
                                 <div class="card-tag">Légi és földi célok ellen</div>
                             </div>
-                            <div class="card-item">
-                                <div class="card-rarity" style="color:#f9a8d4;">Legendary</div>
+
+                            <div class="card-item selectable-card"
+                                 data-card-name="Viharherceg"
+                                 data-card-elixir="5">
+                                <div class="card-header">
+                                    <span class="card-rarity rarity-legendary">Legendary</span>
+                                    <span class="card-cost">5 elixír</span>
+                                </div>
                                 <div class="card-name">Viharherceg</div>
-                                <div class="card-cost">Költség: 5 elixír</div>
                                 <div class="card-tag">Gyors egység, láncsebzés</div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Pakli panel -->
                     <aside class="deck-panel">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span style="font-size:0.8rem;font-weight:600;">Aktív pakli</span>
-                            <span style="font-size:0.7rem;color:#9ca3d4;">8 / 8 kártya</span>
+                        <div class="deck-header-line">
+                            <span class="deck-title">Aktív pakli</span>
+                            <span class="deck-count" id="deckCountLabel">0 / 8 kártya</span>
                         </div>
                         <div class="deck-slots">
-                            <div class="deck-slot filled">Lángőr</div>
-                            <div class="deck-slot filled">Íjász duó</div>
-                            <div class="deck-slot filled">Jégvarázs</div>
-                            <div class="deck-slot filled">Viharherceg</div>
-                            <div class="deck-slot filled">Pajzskapitány</div>
-                            <div class="deck-slot filled">Géptorony</div>
-                            <div class="deck-slot filled">Villámcsapás</div>
-                            <div class="deck-slot filled">Falusi Bárdok</div>
+                            <div class="deck-slot" data-slot="1">Üres</div>
+                            <div class="deck-slot" data-slot="2">Üres</div>
+                            <div class="deck-slot" data-slot="3">Üres</div>
+                            <div class="deck-slot" data-slot="4">Üres</div>
+                            <div class="deck-slot" data-slot="5">Üres</div>
+                            <div class="deck-slot" data-slot="6">Üres</div>
+                            <div class="deck-slot" data-slot="7">Üres</div>
+                            <div class="deck-slot" data-slot="8">Üres</div>
                         </div>
                         <div class="deck-meta">
-                            Átlagos elixír: <strong>3.6</strong><br />
-                            Épület: 1 • Varázslat: 2 • Egység: 5
+                            Átlagos elixír: <strong id="avgElixirLabel">–</strong><br />
+                            Épület: 0 • Varázslat: 0 • Egység: 0
+                        </div>
+                        <div class="deck-actions">
+                            <button id="addToDeckBtn" class="btn-small primary">
+                                Kijelölt kártya → Pakliba
+                            </button>
+                            <button id="clearDeckBtn" class="btn-small secondary">
+                                Pakli ürítése
+                            </button>
                         </div>
                     </aside>
                 </div>
             </section>
 
             <!-- Klán -->
-            <section id="screen-clan" class="screen">
-                <div class="screen-title">Klán</div>
-                <div class="screen-subtitle">
-                    Csatlakozz klánhoz, cserélj kártyákat és vegyél részt klánháborúkban.
-                </div>
-
+            <section class="view" data-view-id="clan">
+                <h2 class="panel-title">Klán Akadémia</h2>
                 <div class="clan-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div class="clan-card-header">
                         <div>
-                            <div style="font-size:0.9rem;font-weight:600;">Klán Akadémia</div>
-                            <div style="font-size:0.75rem;color:#b0b4d8;">Tagok: 32 / 50 • Magyar</div>
+                            <div class="clan-name">Klán Akadémia</div>
+                            <div class="clan-info" id="clanInfoLine">
+                                Tagok: 32 / 50 • Nyelv: magyar
+                            </div>
                         </div>
-                        <button class="shop-button" style="padding:0.25rem 0.9rem;font-size:0.7rem;">
+                        <button id="clanActionBtn" class="shop-button">
                             Csatlakozás
                         </button>
                     </div>
-                    <div class="pill-row">
-                        <span class="pill">Kártyacsere</span>
-                        <span class="pill">Klán chat</span>
-                        <span class="pill">Klánháború</span>
-                        <span class="pill">Akadémia</span>
-                    </div>
-                </div>
-
-                <div class="clan-card">
-                    <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.2rem;">
-                        Klán üzenőfal
-                    </div>
-                    <p style="font-size:0.75rem;color:#c8cdf5;">
-                        „Holnap 19:00-tól klánháború! Frissítsd a paklidat és hozz védekező paklit is.”
+                    <p class="clan-desc">
+                        Csatlakozz egy barátságos, magyar klánhoz, ahol kártyát kérhetsz,
+                        stratégiákat oszthatsz meg, és részt vehetsz klánháborúkban.
                     </p>
+                    <ul class="clan-perks">
+                        <li>💬 Aktív chat és segítség</li>
+                        <li>🎴 Kártyacsere és támogatás</li>
+                        <li>🏆 Közös klánesemények</li>
+                    </ul>
                 </div>
             </section>
 
             <!-- Bolt -->
-            <section id="screen-shop" class="screen">
-                <div class="screen-title">Bolt</div>
-                <div class="screen-subtitle">
-                    Napi ajánlatok, ládák és erőforrások – a haladás gyorsítására.
-                </div>
+            <section class="view" data-view-id="shop">
+                <h2 class="panel-title">Bolt</h2>
+                <p class="panel-subtitle">
+                    Ez csak egy prototípus – a gombok a HUD-ban lévő aranyat / gyémántot módosítják.
+                </p>
 
                 <div class="shop-list">
-                    <div class="shop-item">
+                    <div class="shop-item"
+                         data-price-type="gold"
+                         data-price="750">
                         <div class="shop-info">
                             <div class="shop-name">Napi láda</div>
                             <div class="shop-desc">Garantált rare kártya + arany.</div>
@@ -168,11 +183,13 @@
                         <div class="shop-price">
                             <div class="resource-icon gold"></div>
                             <span>750</span>
-                            <button class="shop-button">Vétel</button>
+                            <button class="shop-button shop-buy-btn">Vétel</button>
                         </div>
                     </div>
 
-                    <div class="shop-item">
+                    <div class="shop-item"
+                         data-price-type="gem"
+                         data-price="490">
                         <div class="shop-info">
                             <div class="shop-name">Óriás láda</div>
                             <div class="shop-desc">Sok kártya, nagy eséllyel Epic/Legendary.</div>
@@ -181,11 +198,14 @@
                         <div class="shop-price">
                             <div class="resource-icon gem"></div>
                             <span>490</span>
-                            <button class="shop-button">Vétel</button>
+                            <button class="shop-button shop-buy-btn">Vétel</button>
                         </div>
                     </div>
 
-                    <div class="shop-item">
+                    <div class="shop-item"
+                         data-price-type="gem"
+                         data-price="250"
+                         data-gold-reward="25000">
                         <div class="shop-info">
                             <div class="shop-name">Arany csomag</div>
                             <div class="shop-desc">+25 000 arany fejlesztéshez.</div>
@@ -193,43 +213,51 @@
                         <div class="shop-price">
                             <div class="resource-icon gem"></div>
                             <span>250</span>
-                            <button class="shop-button">Vétel</button>
+                            <button class="shop-button shop-buy-btn">Vétel</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Események / napi küldetések -->
-            <section id="screen-events" class="screen">
-                <div class="screen-title">Események & Küldetések</div>
-                <div class="screen-subtitle">
-                    Teljesíts napi kihívásokat a jutalmakért, és vegyél részt időszakos eseményeken.
-                </div>
+            <!-- Események / Küldetések -->
+            <section class="view" data-view-id="events">
+                <h2 class="panel-title">Napi küldetések</h2>
+                <p class="panel-subtitle">
+                    A gombokkal szimulálhatod a küldetések teljesítését, arany jutalommal.
+                </p>
 
-                <div style="margin-bottom:0.4rem;font-size:0.78rem;color:#c8cdf5;">
-                    Napi küldetések
-                </div>
                 <div class="quest-list">
-                    <div class="quest-item">
+                    <div class="quest-item"
+                         data-max="3"
+                         data-reward-gold="200">
                         <div class="quest-header">
                             <div class="quest-name">Játssz le 3 mérkőzést</div>
                             <div class="quest-reward">Jutalom: 200 arany</div>
                         </div>
-                        <div class="quest-progress">Előrehaladás: 1 / 3</div>
+                        <div class="quest-progress">Előrehaladás: 0 / 3</div>
+                        <button class="quest-btn btn-small secondary">+1 meccs</button>
                     </div>
-                    <div class="quest-item">
+
+                    <div class="quest-item"
+                         data-max="2"
+                         data-reward-gold="0">
                         <div class="quest-header">
                             <div class="quest-name">Győzz 2 mérkőzésben</div>
-                            <div class="quest-reward">Jutalom: 100 XP</div>
+                            <div class="quest-reward">Jutalom: 100 XP (csak demo szöveg)</div>
                         </div>
                         <div class="quest-progress">Előrehaladás: 0 / 2</div>
+                        <button class="quest-btn btn-small secondary">+1 győzelem</button>
                     </div>
-                    <div class="quest-item">
+
+                    <div class="quest-item"
+                         data-max="1"
+                         data-reward-gold="30">
                         <div class="quest-header">
                             <div class="quest-name">Fejlessz fel egy kártyát</div>
-                            <div class="quest-reward">Jutalom: 30 gyémánt</div>
+                            <div class="quest-reward">Jutalom: 30 arany</div>
                         </div>
                         <div class="quest-progress">Előrehaladás: 0 / 1</div>
+                        <button class="quest-btn btn-small secondary">+1 fejlesztés</button>
                     </div>
                 </div>
             </section>
@@ -237,27 +265,27 @@
 
         <!-- Alsó navigáció -->
         <nav class="bottom-nav">
-            <button class="nav-item active" data-target="home">
-                <span class="icon">🏠</span>
-                <span>Főoldal</span>
+            <button class="nav-item active" data-view="home">
+                <span class="nav-icon">⚔️</span>
+                <span class="nav-label">Főoldal</span>
             </button>
-            <button class="nav-item" data-target="cards">
-                <span class="icon">🃏</span>
-                <span>Kártyák</span>
+            <button class="nav-item" data-view="cards">
+                <span class="nav-icon">🎴</span>
+                <span class="nav-label">Kártyák</span>
             </button>
-            <button class="nav-item" data-target="clan">
-                <span class="icon">🛡️</span>
-                <span>Klán</span>
+            <button class="nav-item" data-view="clan">
+                <span class="nav-icon">🏰</span>
+                <span class="nav-label">Klán</span>
             </button>
-            <button class="nav-item" data-target="shop">
-                <span class="icon">🛒</span>
-                <span>Bolt</span>
+            <button class="nav-item" data-view="shop">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-label">Bolt</span>
             </button>
-            <button class="nav-item" data-target="events">
-                <span class="icon">⭐</span>
-                <span>Események</span>
+            <button class="nav-item" data-view="events">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">Küldik</span>
             </button>
         </nav>
     </div>
-    </body>
+</body>
 </html>
